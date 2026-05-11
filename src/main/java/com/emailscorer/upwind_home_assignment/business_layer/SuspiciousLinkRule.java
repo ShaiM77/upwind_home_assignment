@@ -20,9 +20,9 @@ public class SuspiciousLinkRule implements SecurityRule {
         String[] words = body.split("\\s+"); 
 
         for (String word : words) {
-            if (word.startsWith("http://") || word.startsWith("https://") || word.startsWith("www.")) {
+            if (word.contains("http://") || word.contains("https://") || word.contains("www.")) {
                 
-                // Loop through the same shared map!
+                // looping through shared map of bad TLDs to check if any of the links in the body end with a known bad TLD
                 for (Map.Entry<String, SecurityConstants.RiskLevel> entry : SecurityConstants.TLD_RISK_MAP.entrySet()) {
                     if (word.contains(entry.getKey())) {
                         SecurityConstants.RiskLevel risk = entry.getValue();
