@@ -36,11 +36,15 @@ public class EmailScoringController {
             @RequestHeader(value = "X-API-KEY", required = false) String apiKey,
             @Valid @RequestBody ScoreRequestDTO request) {
 
+        logger.info("Received email scoring request");
+
         // api key authentication
         if (!expectedApiKey.equals(apiKey)) {
+            logger.warn("Unauthorized access attempt - invalid API key");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         ScoreResultDTO result = scoringService.analyze(request);
+        logger.info("Email scoring completed successfully. Score: {}, Verdict: {}", result.getScore(), result.getVerdict());
         // We return the result as JSON, and the UI will handle rendering it safely.
         return ResponseEntity.ok(result);
     }
