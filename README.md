@@ -18,6 +18,7 @@ The engine utilizes a Strategy Pattern, making it trivial to add new detection c
 * **`SuspiciousLinkRule`**: Extracts and evaluates URLs from the email body against a mapped matrix of known malicious/anonymous TLDs (e.g., `.top`, `.xyz`). Utilizes memory-sets to prevent double-penalization of identical links.
 * **`SuspiciousSenderTldRule`**: Evaluates the originating domain of the sender against the high-risk TLD matrix.
 * **`ReplyToMismatchRule`**: Detects spoofing attempts by comparing the `Sender` header against the `Reply-To` header, stripping angle brackets and normalizing cases for accurate comparison.
+* **`PhishingTermsRule`**: Scans the email body for common social engineering phrases (e.g., "urgent", "verify your account"). Applies a minor, cumulative penalty per occurrence to act as a risk modifier—minimizing false positives for normal emails while heavily penalizing keyword-stuffed scams.
 
 ## Security & Design Decisions
 * **XSS Prevention:** The engine sanitizes all output reasons (e.g., escaping `<` and `>`) to ensure the downstream UI cannot be compromised by malicious HTML/JS embedded in the email body.
@@ -32,8 +33,6 @@ This project demonstrates complete confidence through a robust Testing Pyramid:
    * Validates the web contract, ensuring Spring Boot correctly handles missing API keys, oversized payloads, and JSON serialization.
 3. **Acceptance Tests (`MockMvc`):**
    * End-to-end integration testing simulating live JSON payloads hitting the API to verify the entire Spring Application Context and wiring.
-4. **REST Client Suite (`api-tests.http`):**
-   * Included in the repository for easy manual testing and payload simulation without needing a live Gmail frontend.
 
 ## Setup & Running Instructions
 
