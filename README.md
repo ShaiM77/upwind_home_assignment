@@ -11,6 +11,7 @@ Built with **Java** and **Spring Boot**, the engine exposes a secure REST API th
 3. **Controller Layer:** The `EmailScoringController` authenticates the request via an API Key and enforces strict payload size limits to prevent Denial of Service (DoS) attacks.
 4. **Service & Rules Engine:** The `ScoringService` iterates over a dynamically injected list of `SecurityRule` components. Each rule evaluates a specific threat vector independently.
 5. **Response:** Penalties are aggregated, bounded at 0, and the explanation strings are strictly sanitized to prevent Cross-Site Scripting (XSS) before being returned to the UI.
+6. 
 
 ## Implemented Security Rules
 The engine utilizes a Strategy Pattern, making it trivial to add new detection capabilities. Current rules include:
@@ -19,6 +20,7 @@ The engine utilizes a Strategy Pattern, making it trivial to add new detection c
 * **`SuspiciousSenderTldRule`**: Evaluates the originating domain of the sender against the high-risk TLD matrix.
 * **`ReplyToMismatchRule`**: Detects spoofing attempts by comparing the `Sender` header against the `Reply-To` header, stripping angle brackets and normalizing cases for accurate comparison.
 * **`PhishingTermsRule`**: Scans the email body for common social engineering phrases (e.g., "urgent", "verify your account"). Applies a minor, cumulative penalty per occurrence to act as a risk modifier—minimizing false positives for normal emails while heavily penalizing keyword-stuffed scams.
+* * **`DmarcValidationRule`**: Evaluates the DMARC authentication status passed from the client's email headers. By leveraging the Google Workspace's pre-calculated cryptographic checks, it instantly applies a critical penalty to spoofed emails without introducing synchronous network latency for manual DNS lookups.
 
 ## Security & Design Decisions
 * **XSS Prevention:** The engine sanitizes all output reasons (e.g., escaping `<` and `>`) to ensure the downstream UI cannot be compromised by malicious HTML/JS embedded in the email body.
