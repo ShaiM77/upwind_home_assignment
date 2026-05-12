@@ -318,4 +318,122 @@ public class ReplyToMismatchRuleTest {
         assertEquals(true, reason.contains("hacker@malicious.net"));
         assertEquals(true, reason.contains("legitimate@company.com"));
     }
+
+    // ==================== ADDITIONAL EDGE CASE TESTS ====================
+
+    @Test
+    void givenOnlyOpenBracketInSender_whenEvaluate_thenDetectsMismatch() {
+        // Arrange - incomplete bracket means email is not properly extracted
+        ScoreRequestDTO request = new ScoreRequestDTO();
+        request.setSender("<test@example.com");
+        request.setReplyTo("test@example.com");
+
+        // Act
+        RuleResult result = rule.evaluate(request);
+
+        // Assert - mismatches because "<test@example.com" != "test@example.com"
+        assertEquals(40, result.getPenalty());
+        assertNotNull(result.getReason());
+    }
+
+    @Test
+    void givenOnlyCloseBracketInSender_whenEvaluate_thenDetectsMismatch() {
+        // Arrange
+        ScoreRequestDTO request = new ScoreRequestDTO();
+        request.setSender("test@example.com>");
+        request.setReplyTo("test@example.com");
+
+        // Act
+        RuleResult result = rule.evaluate(request);
+
+        // Assert - mismatches because "test@example.com>" != "test@example.com"
+        assertEquals(40, result.getPenalty());
+        assertNotNull(result.getReason());
+    }
+
+    @Test
+    void givenReversedBracketsInSender_whenEvaluate_thenDetectsMismatch() {
+        // Arrange
+        ScoreRequestDTO request = new ScoreRequestDTO();
+        request.setSender(">test@example.com<");
+        request.setReplyTo("test@example.com");
+
+        // Act
+        RuleResult result = rule.evaluate(request);
+
+        // Assert - mismatches because end < start (> is before <)
+        assertEquals(40, result.getPenalty());
+        assertNotNull(result.getReason());
+    }
+
+    @Test
+    void givenMultipleBracketsInSender_whenEvaluate_thenExtractsFirstPair() {
+        // Arrange
+        ScoreRequestDTO request = new ScoreRequestDTO();
+        request.setSender("John <john@example.com> <backup>");
+        request.setReplyTo("john@example.com");
+
+        // Act
+        RuleResult result = rule.evaluate(request);
+
+        // Assert
+        assertEquals(0, result.getPenalty());
+    }
+
+    @Test
+    void givenReplyToWithOnlyOpenBracket_whenEvaluate_thenMismatchDetected() {
+        // Arrange
+        ScoreRequestDTO request = new ScoreRequestDTO();
+        request.setSender("user@example.com");
+        request.setReplyTo("<other@example.com");
+
+        // Act
+        RuleResult result = rule.evaluate(request);
+
+        // Assert
+        assertEquals(40, result.getPenalty());
+    }
+
+    @Test
+    void givenBothAddressesFormattedIdentically_whenEvaluate_thenReturnsNoPenalty() {
+        // Arrange
+        ScoreRequestDTO request = new ScoreRequestDTO();
+        request.setSender("Support Team <support@acme.com>");
+        request.setReplyTo("Support Desk <support@acme.com>");
+
+        // Act
+        RuleResult result = rule.evaluate(request);
+
+        // Assert
+        assertEquals(0, result.getPenalty());
+        assertNotNull(result.getReason());
+    }
+
+    @Test
+    void givenWhitespaceInBrackets_whenEvaluate_thenTrimsAndMatches() {
+        // Arrange
+        ScoreRequestDTO request = new ScoreRequestDTO();
+        request.setSender("<  admin@site.com  >");
+        request.setReplyTo("admin@site.com");
+
+        // Act
+        RuleResult result = rule.evaluate(request);
+
+        // Assert
+        assertEquals(0, result.getPenalty());
+    }
+
+    @Test
+    void givenAllUppercaseExtraction_whenEvaluate_thenNormalizes() {
+        // Arrange
+        ScoreRequestDTO request = new ScoreRequestDTO();
+        request.setSender("ADMIN@SITE.COM");
+        request.setReplyTo("admin@site.com");
+
+        // Act
+        RuleResult result = rule.evaluate(request);
+
+        // Assert
+        assertEquals(0, result.getPenalty());
+    }
 }

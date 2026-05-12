@@ -12,8 +12,8 @@ public class SuspiciousSenderTldRule implements SecurityRule {
         for (Map.Entry<String, SecurityConstants.RiskLevel> entry : SecurityConstants.TLD_RISK_MAP.entrySet()) {
             if (email.endsWith(entry.getKey())) {
                 SecurityConstants.RiskLevel risk = entry.getValue();
-                String explanation = "Sender Identity -> " + risk.description + " Detected TLD: " + entry.getKey();
-                return new RuleResult(risk.penalty, explanation);
+                String reason = "Sender Identity -> " + risk.description + " Detected TLD: " + entry.getKey() +"\n";
+                return new RuleResult(risk.penalty, reason);
             }
         }
 

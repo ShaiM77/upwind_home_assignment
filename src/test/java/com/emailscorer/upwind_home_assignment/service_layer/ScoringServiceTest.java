@@ -187,6 +187,209 @@ public class ScoringServiceTest {
         assertEquals(1, result.getReasons().size());
         assertEquals("", result.getReasons().get(0)); // null sanitized to ""
     }
+
+    @Test
+    void givenEmailContentWithHtmlTags_whenAnalyze_thenSanitizesContent() {
+        // Arrange
+        when(mockRule1.evaluate(any())).thenReturn(new RuleResult(0, null));
+        when(mockRule2.evaluate(any())).thenReturn(new RuleResult(0, null));
+
+        ScoreRequestDTO request = new ScoreRequestDTO();
+        request.setEmailContent("Click here: <a href='http://malicious.com'>link</a>");
+
+        // Act
+        ScoreResultDTO result = scoringService.analyze(request);
+
+        // Assert
+        assertEquals(100, result.getScore());
+        assertEquals("Safe", result.getVerdict());
+        // Content is sanitized internally before rules evaluate it
+    }
+
+    @Test
+    void givenMultipleRulesWithPenalties_whenAnalyze_thenAllReasonsAreIncluded() {
+        // Arrange
+        when(mockRule1.evaluate(any())).thenReturn(new RuleResult(15, "Reason 1"));
+        when(mockRule2.evaluate(any())).thenReturn(new RuleResult(25, "Reason 2"));
+
+        ScoreRequestDTO request = new ScoreRequestDTO();
+
+        // Act
+        ScoreResultDTO result = scoringService.analyze(request);
+
+        // Assert
+        assertEquals(60, result.getScore());
+        assertEquals("Malicious", result.getVerdict());
+        assertEquals(2, result.getReasons().size());
+        assertEquals(true, result.getReasons().contains("Reason 1"));
+        assertEquals(true, result.getReasons().contains("Reason 2"));
+    }
+
+    @Test
+    void givenAllReasonsWithHtmlTags_whenAnalyze_thenAllAreProperlyEncoded() {
+        // Arrange
+        when(mockRule1.evaluate(any())).thenReturn(new RuleResult(10, "<img src=x>"));
+        when(mockRule2.evaluate(any())).thenReturn(new RuleResult(15, "<iframe></iframe>"));
+
+        ScoreRequestDTO request = new ScoreRequestDTO();
+
+        // Act
+        ScoreResultDTO result = scoringService.analyze(request);
+
+        // Assert
+        assertEquals(75, result.getScore());
+        assertEquals("Safe", result.getVerdict());
+        assertEquals(2, result.getReasons().size());
+        assertEquals(true, result.getReasons().contains("&lt;img src=x&gt;"));
+        assertEquals(true, result.getReasons().contains("&lt;iframe&gt;&lt;/iframe&gt;"));
+    }
+
+    @Test
+    void givenScoreBoundaryAt70_whenAnalyze_thenVerdictIsSafe() {
+        // Arrange
+        when(mockRule1.evaluate(any())).thenReturn(new RuleResult(30, "Minor issue"));
+        when(mockRule2.evaluate(any())).thenReturn(new RuleResult(0, null));
+
+        ScoreRequestDTO request = new ScoreRequestDTO();
+
+        // Act
+        ScoreResultDTO result = scoringService.analyze(request);
+
+        // Assert
+        assertEquals(70, result.getScore());
+        assertEquals("Safe", result.getVerdict());
+    }
+
+    @Test
+    void givenScoreBoundaryAt1Below70_whenAnalyze_thenVerdictIsMalicious() {
+        // Arrange
+        when(mockRule1.evaluate(any())).thenReturn(new RuleResult(31, "Major issue"));
+        when(mockRule2.evaluate(any())).thenReturn(new RuleResult(0, null));
+
+        ScoreRequestDTO request = new ScoreRequestDTO();
+
+        // Act
+        ScoreResultDTO result = scoringService.analyze(request);
+
+        // Assert
+        assertEquals(69, result.getScore());
+        assertEquals("Malicious", result.getVerdict());
+    }
+
+    @Test
+    void givenPenaltyExactlyEquals100_whenAnalyze_thenScoreIsBoundedAtZero() {
+        // Arrange
+        when(mockRule1.evaluate(any())).thenReturn(new RuleResult(50, "Major threat"));
+        when(mockRule2.evaluate(any())).thenReturn(new RuleResult(50, "Critical threat"));
+
+        ScoreRequestDTO request = new ScoreRequestDTO();
+
+        // Act
+        ScoreResultDTO result = scoringService.analyze(request);
+
+        // Assert
+        assertEquals(0, result.getScore());
+        assertEquals("Malicious", result.getVerdict());
+    }
+
+    @Test
+    void givenMixedNullAndValidReasons_whenAnalyze_thenProcessesBoth() {
+        // Arrange
+        when(mockRule1.evaluate(any())).thenReturn(new RuleResult(10, null));
+        when(mockRule2.evaluate(any())).thenReturn(new RuleResult(20, "Valid reason"));
+
+        ScoreRequestDTO request = new ScoreRequestDTO();
+
+        // Act
+        ScoreResultDTO result = scoringService.analyze(request);
+
+        // Assert
+        assertEquals(70, result.getScore());
+        assertEquals("Safe", result.getVerdict());
+        assertEquals(2, result.getReasons().size());
+        assertEquals(true, result.getReasons().contains(""));
+        assertEquals(true, result.getReasons().contains("Valid reason"));
+    }
+
+    @Test
+    void givenMultipleRulesOnlyOneWithPenalty_whenAnalyze_thenOnlyIncludesRelevantReason() {
+        // Arrange
+        when(mockRule1.evaluate(any())).thenReturn(new RuleResult(0, "This should not be included"));
+        when(mockRule2.evaluate(any())).thenReturn(new RuleResult(15, "This should be included"));
+
+        ScoreRequestDTO request = new ScoreRequestDTO();
+
+        // Act
+        ScoreResultDTO result = scoringService.analyze(request);
+
+        // Assert
+        assertEquals(85, result.getScore());
+        assertEquals("Safe", result.getVerdict());
+        assertEquals(1, result.getReasons().size());
+        assertEquals("This should be included", result.getReasons().get(0));
+    }
+
+    @Test
+    void givenComplexSanitizationNeeded_whenAnalyze_thenHandlesMultipleTagTypes() {
+        // Arrange
+        when(mockRule1.evaluate(any())).thenReturn(new RuleResult(5, "Alert: <script>alert('xss')</script> and <img src=x>"));
+        when(mockRule2.evaluate(any())).thenReturn(new RuleResult(0, null));
+
+        ScoreRequestDTO request = new ScoreRequestDTO();
+
+        // Act
+        ScoreResultDTO result = scoringService.analyze(request);
+
+        // Assert
+        assertEquals(95, result.getScore());
+        assertEquals("Safe", result.getVerdict());
+        String sanitized = result.getReasons().get(0);
+        assertEquals(true, sanitized.contains("&lt;script&gt;"));
+        assertEquals(true, sanitized.contains("&lt;/script&gt;"));
+        assertEquals(true, sanitized.contains("&lt;img src=x&gt;"));
+    }
+
+    @Test
+    void givenRulesListWithOneRule_whenAnalyze_thenProcessesSingleRule() {
+        // Arrange
+        SecurityRule singleRule = new SecurityRule() {
+            @Override
+            public RuleResult evaluate(ScoreRequestDTO req) {
+                return new RuleResult(20, "Single rule violation");
+            }
+        };
+        ScoringService singleRuleService = new ScoringService(Arrays.asList(singleRule));
+
+        ScoreRequestDTO request = new ScoreRequestDTO();
+
+        // Act
+        ScoreResultDTO result = singleRuleService.analyze(request);
+
+        // Assert
+        assertEquals(80, result.getScore());
+        assertEquals("Safe", result.getVerdict());
+        assertEquals(1, result.getReasons().size());
+    }
+
+    @Test
+    void givenRequestWithSanitizationNeededInContent_whenAnalyze_thenContentIsSanitizedBeforeRuleEvaluation() {
+        // Arrange - Content with HTML tags
+        when(mockRule1.evaluate(any())).thenReturn(new RuleResult(0, null));
+        when(mockRule2.evaluate(any())).thenReturn(new RuleResult(0, null));
+
+        ScoreRequestDTO request = new ScoreRequestDTO();
+        request.setEmailContent("Normal content with <tag> inside");
+
+        // Act
+        ScoreResultDTO result = scoringService.analyze(request);
+
+        // Assert
+        assertEquals(100, result.getScore());
+        assertEquals("Safe", result.getVerdict());
+        assertEquals(0, result.getReasons().size());
+        // The request object should have its content sanitized
+        assertEquals("Normal content with &lt;tag&gt; inside", request.getEmailContent());
+    }
         
 
 }

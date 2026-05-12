@@ -6,8 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.emailscorer.upwind_home_assignment.business_layer.RuleResult;
-import com.emailscorer.upwind_home_assignment.business_layer.SuspiciousLinkRule;
 import com.emailscorer.upwind_home_assignment.dto.ScoreRequestDTO;
 
 public class SuspiciousLinkRuleTest {

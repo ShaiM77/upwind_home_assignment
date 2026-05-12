@@ -17,7 +17,7 @@ public class ReplyToMismatchRule implements SecurityRule {
         String senderAddress = extractEmailAddress(sender);
         String replyToAddress = extractEmailAddress(replyTo);
         if(!senderAddress.equalsIgnoreCase(replyToAddress)) {
-           String reason = "Reply-To address (" + replyToAddress + ") does not match Sender (" + senderAddress + ") and could indicate a phishing attempt.";
+           String reason = "Reply-To address (" + replyToAddress + ") does not match Sender (" + senderAddress + ") and could indicate a phishing attempt.\n";
             return new RuleResult(PENALTY, reason);
         }
         return new RuleResult(0, "Reply-To header matches Sender header or is missing.");
