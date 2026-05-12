@@ -21,7 +21,7 @@ public class DangerousAttachmentRuleTest {
         rule = new DangerousAttachmentRule();
     }
 
-    // ==================== NULL/EMPTY ATTACHMENT TESTS ====================
+    // NULL/EMPTY attachment tests 
 
     @Test
     void givenNullAttachments_whenEvaluate_thenReturnsNoPenalty() {
@@ -51,7 +51,7 @@ public class DangerousAttachmentRuleTest {
         assertEquals(null, result.getReason());
     }
 
-    // ==================== SAFE ATTACHMENTS TESTS ====================
+    // SAFE attachment tests 
 
     @Test
     void givenSafeDocumentAttachment_whenEvaluate_thenReturnsNoPenalty() {
@@ -81,7 +81,7 @@ public class DangerousAttachmentRuleTest {
         assertEquals(null, result.getReason());
     }
 
-    // ==================== CRITICAL EXTENSION TESTS (40 PENALTY EACH) ====================
+    //CRITICAL EXTENSION tests 40 penalty for each
 
     @Test
     void givenCriticalAttachmentExe_whenEvaluate_thenReturnsCriticalPenalty() {
@@ -159,7 +159,7 @@ public class DangerousAttachmentRuleTest {
         assertEquals(true, result.getReason().contains(".js"));
     }
 
-    // ==================== HIGH-RISK EXTENSION TESTS (25 PENALTY EACH) ====================
+    // HIGH-RISK extensions tests 25 pentalty for each
 
     @Test
     void givenHighRiskAttachmentZip_whenEvaluate_thenReturnsHighPenalty() {
@@ -207,7 +207,7 @@ public class DangerousAttachmentRuleTest {
         assertEquals(true, result.getReason().contains(".iso"));
     }
 
-    // ==================== CASE INSENSITIVITY TESTS ====================
+    // case insensitivity tests
 
     @Test
     void givenCriticalAttachmentUppercase_whenEvaluate_thenDetectsExtension() {
@@ -237,7 +237,7 @@ public class DangerousAttachmentRuleTest {
         assertNotNull(result.getReason());
     }
 
-    // ==================== MULTIPLE ATTACHMENTS TESTS ====================
+    // multiple attachments tests
 
     @Test
     void givenMultipleCriticalAttachments_whenEvaluate_thenCumulatesPenalties() {
@@ -288,7 +288,7 @@ public class DangerousAttachmentRuleTest {
         assertEquals(true, result.getReason().contains("archive.zip"));
     }
 
-    // ==================== MIXED SAFE AND DANGEROUS TESTS ====================
+    // mixed safe and dangerous attachments tests
 
     @Test
     void givenMixedSafeAndDangerousAttachments_whenEvaluate_thenOnlyPenalizesDangerous() {
@@ -322,7 +322,7 @@ public class DangerousAttachmentRuleTest {
         assertEquals(true, result.getReason().contains("malware.exe"));
     }
 
-    // ==================== MESSAGE FORMAT TESTS ====================
+    // message formatting tests
 
     @Test
     void givenDangerousAttachment_whenEvaluate_thenReasonContainsFileName() {
@@ -356,7 +356,7 @@ public class DangerousAttachmentRuleTest {
         assertEquals(true, reason.contains("third.bat"));
     }
 
-    // ==================== EDGE CASES ====================
+    // edge cases
 
     @Test
     void givenAttachmentWithMultipleDots_whenEvaluate_thenUsesLastExtension() {

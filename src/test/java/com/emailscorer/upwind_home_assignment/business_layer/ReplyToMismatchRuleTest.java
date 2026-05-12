@@ -18,7 +18,7 @@ public class ReplyToMismatchRuleTest {
         rule = new ReplyToMismatchRule();
     }
 
-    // ==================== NULL/EMPTY REPLY-TO TESTS ====================
+    // null/empty Reply-To tests
 
     @Test
     void givenNullReplyTo_whenEvaluate_thenReturnsNoPenalty() {
@@ -65,7 +65,7 @@ public class ReplyToMismatchRuleTest {
         assertEquals(null, result.getReason());
     }
 
-    // ==================== MATCHING ADDRESS TESTS ====================
+    //matching addresses tests
 
     @Test
     void givenMatchingSenderAndReplyToSimple_whenEvaluate_thenReturnsNoPenalty() {
@@ -145,7 +145,7 @@ public class ReplyToMismatchRuleTest {
         assertNotNull(result.getReason());
     }
 
-    // ==================== MISMATCHING ADDRESS TESTS ====================
+    // mismatching addresses tests
 
     @Test
     void givenDifferentSenderAndReplyTo_whenEvaluate_thenReturnsPenalty() {
@@ -210,7 +210,7 @@ public class ReplyToMismatchRuleTest {
         assertNotNull(result.getReason());
     }
 
-    // ==================== HEADER PARSING EDGE CASES ====================
+    // header parsing edge cases
 
     @Test
     void givenSenderWithoutBrackets_whenEvaluate_thenExtractsAddressCorrectly() {
@@ -269,7 +269,7 @@ public class ReplyToMismatchRuleTest {
         assertEquals(0, result.getPenalty());
     }
 
-    // ==================== NULL SENDER TESTS ====================
+    // NULL/EMPTY sender tests
 
     @Test
     void givenNullSender_whenEvaluate_thenHandlesGracefully() {
@@ -301,7 +301,7 @@ public class ReplyToMismatchRuleTest {
         assertNotNull(result.getReason());
     }
 
-    // ==================== REASON MESSAGE TESTS ====================
+    // reason message content tests
 
     @Test
     void givenMismatchDetected_whenEvaluate_thenReasonContainsAddresses() {
@@ -319,7 +319,7 @@ public class ReplyToMismatchRuleTest {
         assertEquals(true, reason.contains("legitimate@company.com"));
     }
 
-    // ==================== ADDITIONAL EDGE CASE TESTS ====================
+    // edge cases
 
     @Test
     void givenOnlyOpenBracketInSender_whenEvaluate_thenDetectsMismatch() {

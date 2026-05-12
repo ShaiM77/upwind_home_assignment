@@ -15,6 +15,8 @@ public class ScoreRequestDTO {
      @Size(max = 100, message = "Too many attachments")
      private List<String> attachmentNames;
 
+     private boolean dmarcFailed;
+
      public String getEmailContent() {
           return emailContent; }
 
@@ -35,8 +37,13 @@ public class ScoreRequestDTO {
 
      public List<String> getAttachmentNames() { 
           return attachmentNames; }
-          
+
      public void setAttachmentNames(List<String> attachmentNames) { 
           this.attachmentNames = attachmentNames; }
+     public boolean isDmarcFailed() {
+          return dmarcFailed;}
+
+     public void setDmarcFailed(boolean dmarcFailed) {
+          this.dmarcFailed = dmarcFailed;}
 }
 
