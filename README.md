@@ -3,7 +3,7 @@
 ## Overview
 This project is a backend threat-analysis engine designed to evaluate raw email data and detect potential phishing, spoofing, and malware delivery attempts. 
 
-Built with **Java** and **Spring Boot**, the engine exposes a secure REST API that accepts email metadata and content, processes it through a highly extensible rules engine, and returns a cumulative risk score alongside sanitized, human-readable explanations.
+Built with **Java** and **Spring Boot**, the engine exposes a secure REST API that accepts email metadata and content, processes it through a highly extensible rules engine, and returns a cumulative risk score alongside sanitized, explanations.
 
 ## Architecture & Flow
 1. **Client Layer:** A Google Workspace (Gmail) Add-on extracts real-time email context (Headers, Body, Attachment Names) without downloading heavy binary payloads.
