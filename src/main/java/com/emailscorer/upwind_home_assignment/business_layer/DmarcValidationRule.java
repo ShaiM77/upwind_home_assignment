@@ -9,6 +9,9 @@ public class DmarcValidationRule implements SecurityRule {
 
     @Override
     public RuleResult evaluate(ScoreRequestDTO request) {
+        if (request == null) {
+            return new RuleResult(0, null);
+        }
         if (request.isDmarcFailed()) {
             return new RuleResult(PENALTY, "• Authentication -> CRITICAL: DMARC verification failed. The sender address is likely spoofed.\n");
         }

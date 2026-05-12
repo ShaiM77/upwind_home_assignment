@@ -65,5 +65,36 @@ public class EmailScoringAcceptanceTest {
                 // but we verify that reasons were generated
                 .andExpect(jsonPath("$.reasons").isNotEmpty()); 
     }
+     @Test
+    void givenOnlyDmarcFails_whenSystemAnalyzes_thenReturnsPenalty() throws Exception {
+        ScoreRequestDTO dto = new ScoreRequestDTO();
+        dto.setSender("user@company.com");
+        dto.setReplyTo("user@company.com");
+        dto.setEmailContent("Normal content");
+        dto.setDmarcFailed(true);
+        mockMvc.perform(post("/api/score")
+                .header("X-API-KEY", "assignment-secret-key")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.score").value(org.hamcrest.Matchers.lessThan(100)))
+                .andExpect(jsonPath("$.reasons").isNotEmpty());
+    }
+
+    @Test
+    void givenOnlyDangerousAttachment_whenSystemAnalyzes_thenReturnsPenalty() throws Exception {
+        ScoreRequestDTO dto = new ScoreRequestDTO();
+        dto.setSender("user@company.com");
+        dto.setReplyTo("user@company.com");
+        dto.setEmailContent("Normal content");
+        dto.setAttachmentNames(Arrays.asList("virus.exe"));
+        mockMvc.perform(post("/api/score")
+                .header("X-API-KEY", "assignment-secret-key")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.score").value(org.hamcrest.Matchers.lessThan(100)))
+                .andExpect(jsonPath("$.reasons").isNotEmpty());
+    }
 
 }

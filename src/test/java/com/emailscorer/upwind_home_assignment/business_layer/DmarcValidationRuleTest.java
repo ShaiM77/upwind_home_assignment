@@ -53,7 +53,6 @@ public class DmarcValidationRuleTest {
     }
 
     // ==================== DEFAULT STATE TESTS ====================
-
     @Test
     void givenDefaultDto_whenEvaluate_thenDefaultsToNoPenalty() {
         // Arrange
@@ -64,6 +63,15 @@ public class DmarcValidationRuleTest {
         // Act
         RuleResult result = rule.evaluate(dto);
 
+        // Assert
+        assertEquals(0, result.getPenalty());
+        assertNull(result.getReason());
+    }
+    
+    @Test
+    void givenNullRequest_whenEvaluate_thenReturnsNoPenalty() {
+        // Act
+        RuleResult result = rule.evaluate(null);
         // Assert
         assertEquals(0, result.getPenalty());
         assertNull(result.getReason());

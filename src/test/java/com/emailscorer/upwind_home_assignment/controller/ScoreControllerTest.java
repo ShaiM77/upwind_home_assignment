@@ -85,4 +85,17 @@ public class ScoreControllerTest {
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    void givenMalformedJson_whenCalculateScore_thenReturnsBadRequest() throws Exception {
+        // Arrange: Malformed JSON
+        String malformedJson = "{\"emailContent\": \"test\", "; // Truncated JSON
+
+        // Act & Assert
+        mockMvc.perform(post("/api/score")
+                .header("X-API-KEY", "assignment-secret-key")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(malformedJson))
+                .andExpect(status().isBadRequest());
+    }
 }
